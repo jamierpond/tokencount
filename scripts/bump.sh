@@ -49,6 +49,6 @@ echo "$CURRENT -> $NEW"
 
 # Commit
 git add "$PYPROJECT"
-git commit -m "chore: bump to v$NEW"
+git commit -am "chore: bump to v$NEW"
 
 echo "Committed: chore: bump to v$NEW"

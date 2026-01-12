@@ -24,8 +24,8 @@ read -p "Push $TAG to origin? (y/n) " -n 1 -r
 echo ""
 
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-    git push origin "$TAG"
-    echo "Pushed $TAG"
+    git push origin HEAD "$TAG"
+    echo "Pushed commit and $TAG"
 else
     git tag -d "$TAG"
     echo "Cancelled. Tag deleted."

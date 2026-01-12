@@ -18,24 +18,43 @@ stderr = Console(stderr=True)
 
 
 def get_reference_comparison(tokens: int) -> str | None:
-    """Return a string comparing token count to closest reference text."""
-    if tokens <= 0:
+    """Return a string comparing token count to reference texts."""
+    if tokens <= 0 or not REFERENCE_TEXTS:
         return None
 
-    # Find closest reference
-    closest = None
-    min_diff = float("inf")
+    # REFERENCE_TEXTS is sorted by token count (ascending)
+    smallest_title, smallest_author, smallest_count = REFERENCE_TEXTS[0]
+    largest_title, largest_author, largest_count = REFERENCE_TEXTS[-1]
 
+    # Edge cases
+    if tokens < smallest_count:
+        pct = (tokens / smallest_count) * 100
+        return f"{pct:.0f}% of {smallest_title} by {smallest_author}"
+
+    if tokens > largest_count:
+        pct = (tokens / largest_count) * 100
+        return f"{pct:.0f}% of {largest_title} by {largest_author}"
+
+    # Find lower and upper bounds
+    lower = None
+    upper = None
     for title, author, count in REFERENCE_TEXTS:
-        diff = abs(tokens - count)
-        if diff < min_diff:
-            min_diff = diff
-            closest = (title, author, count)
+        if count <= tokens:
+            lower = (title, author, count)
+        elif upper is None:
+            upper = (title, author, count)
+            break
 
-    if closest:
-        title, author, count = closest
-        pct = (tokens / count) * 100
-        return f"{pct:.0f}% of {title} by {author}"
+    if lower and upper:
+        lower_title, lower_author, lower_count = lower
+        upper_title, upper_author, upper_count = upper
+        lower_pct = (tokens / lower_count) * 100
+        upper_pct = (tokens / upper_count) * 100
+        return (
+            f"{lower_pct:.0f}% of {lower_title}, "
+            f"{upper_pct:.0f}% of {upper_title}"
+        )
+
     return None
 
 

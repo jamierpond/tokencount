@@ -2,29 +2,15 @@
 
 Token counter CLI. Like `wc` but for LLM tokens.
 
-I use this to get a sense of how much I'm about to nuke an LLM chat.
-E.g.
 ```bash
-git diff | tc
+git diff | tc        # before pasting into chat
+tc *.py              # check project size
 ```
-Before I:
-```bash
-git diff | pbcopy
-```
-It into an LLM chat, for example, when reviewing a PR.
 
-## Quick Install
+## Install
 
 ```bash
 uv tool install git+https://github.com/jamierpond/tokencount
-```
-
-## Install from source
-
-```bash
-uv tool install .
-# or for live edits during dev:
-uv tool install --editable .
 ```
 
 ## Usage
@@ -40,21 +26,21 @@ tc --json file.txt             # JSON output
 ## Output
 
 ```
-   23L    301C     85T  Makefile
-  138L  3,941C    866T  test_main.py
-  172L  4,727C  1,098T  main.py
-  ----  ------  ------
-  333L  8,969C  2,049T  total (o200k_base)
+   475  counts.py
+   878  test_main.py
+ 1,372  main.py
 
-2049
+  386 lines, 11.36 KB
+
+  2,725 tokens (o200k_base)
+  130% of The Cat in the Hat by Dr. Seuss
+
+2725
 ```
 
-L = lines, C = chars, T = tokens
-
-Sorted by token count (smallest first). Total on stdout for piping.
+Sorted by token count. Reference comparison for scale. Total on stdout for piping.
 
 ## Encodings
 
-- `o200k_base` (default) - GPT-4o
+- `o200k_base` (default) - GPT-4o, Claude
 - `cl100k_base` - GPT-4, GPT-3.5-turbo
-- `p50k_base` - older GPT-3

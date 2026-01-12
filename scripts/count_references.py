@@ -3,13 +3,15 @@
 Generate REFERENCE_TEXTS by downloading from Project Gutenberg.
 
 Usage:
-    ./count_references.py           # Download all, output Python code
+    ./count_references.py           # Download all, output to stdout
+    ./count_references.py --write   # Write directly to counts.py
     ./count_references.py --table   # Output as table instead
 """
 
 import argparse
 import sys
 import urllib.request
+from pathlib import Path
 
 import tiktoken
 

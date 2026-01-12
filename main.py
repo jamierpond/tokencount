@@ -2,9 +2,11 @@ import argparse
 import json
 import sys
 from dataclasses import dataclass
+from importlib.metadata import version
 
 import tiktoken
 
+__version__ = version("tokencount")
 DEFAULT_ENCODING = "o200k_base"
 
 

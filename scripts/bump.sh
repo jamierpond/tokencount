@@ -38,8 +38,12 @@ esac
 
 NEW="$MAJOR.$MINOR.$PATCH"
 
-# Update pyproject.toml
-sed -i '' "s/^version = \"$CURRENT\"/version = \"$NEW\"/" "$PYPROJECT"
+# Update pyproject.toml (cross-platform sed)
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    sed -i '' "s/^version = \"$CURRENT\"/version = \"$NEW\"/" "$PYPROJECT"
+else
+    sed -i "s/^version = \"$CURRENT\"/version = \"$NEW\"/" "$PYPROJECT"
+fi
 
 echo "$CURRENT -> $NEW"
 

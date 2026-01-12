@@ -209,6 +209,9 @@ def main() -> None:
             except IsADirectoryError:
                 stderr.print(f"[red]tc: {filepath}: Is a directory[/red]")
                 sys.exit(1)
+            except UnicodeDecodeError:
+                stderr.print(f"[yellow]tc: {filepath}: skipping binary file[/yellow]")
+                continue
     else:
         if sys.stdin.isatty():
             parser.print_help()

@@ -12,6 +12,22 @@ def count_tokens(text: str, encoding: str) -> int:
     return len(enc.encode(text))
 
 
+def count_lines(text: str) -> int:
+    return text.count("\n") + (1 if text and not text.endswith("\n") else 0)
+
+
+def count_chars(text: str) -> int:
+    return len(text)
+
+
+class FileStats:
+    def __init__(self, name: str, tokens: int, lines: int, chars: int):
+        self.name = name
+        self.tokens = tokens
+        self.lines = lines
+        self.chars = chars
+
+
 def format_number(n: int) -> str:
     return f"{n:,}"
 
@@ -19,20 +35,33 @@ def format_number(n: int) -> str:
 def print_pretty_output(
     sorted_counts: list[tuple[str, int]], total: int, encoding: str
 ) -> None:
-    if len(sorted_counts) > 1:
-        max_tokens = max(count for _, count in sorted_counts)
-        token_width = len(format_number(max_tokens))
-        max_name = max(len(name) for name, _ in sorted_counts)
+    total_formatted = format_number(total)
+    token_width = len(total_formatted)
 
-        print("\n### Token counts:", file=sys.stderr)
+    print(file=sys.stderr)
+    if len(sorted_counts) > 1:
+        max_name = max(len(name) for name, _ in sorted_counts)
+        total_line = f"{total_formatted}  total ({encoding})"
+        content_width = max(token_width + 2 + max_name, len(total_line))
+
+        print(f"  ┌─{'─' * content_width}─┐", file=sys.stderr)
         for name, count in sorted_counts:
-            print(f"  {format_number(count):>{token_width}}  {name}", file=sys.stderr)
-        print("-" * (token_width + max_name + 4), file=sys.stderr)
-        print(
-            f"  {format_number(total):>{token_width}}  total ({encoding})",
-            file=sys.stderr,
-        )
-        print(file=sys.stderr)
+            line = f"{format_number(count):>{token_width}}  {name}"
+            print(f"  │ {line:<{content_width}} │", file=sys.stderr)
+        print(f"  ├─{'─' * content_width}─┤", file=sys.stderr)
+        print(f"  │ {total_line:<{content_width}} │", file=sys.stderr)
+        print(f"  └─{'─' * content_width}─┘", file=sys.stderr)
+    else:
+        name = sorted_counts[0][0] if sorted_counts[0][0] != "<stdin>" else "stdin"
+        label = f"{total_formatted} tokens ({encoding})"
+        box_width = max(len(label) + 2, len(name) + 2)
+
+        print(f"  ┌{'─' * box_width}┐", file=sys.stderr)
+        print(f"  │ {name:<{box_width - 2}} │", file=sys.stderr)
+        print(f"  ├{'─' * box_width}┤", file=sys.stderr)
+        print(f"  │ {label:<{box_width - 2}} │", file=sys.stderr)
+        print(f"  └{'─' * box_width}┘", file=sys.stderr)
+    print(file=sys.stderr)
 
     print(total)
 

@@ -47,7 +47,8 @@ def test_single_file() -> None:
         assert result.returncode == 0
         assert result.stdout.strip().isdigit()
         assert int(result.stdout.strip()) > 0
-        assert result.stderr == ""
+        assert "┌" in result.stderr
+        assert "tokens" in result.stderr
     Path(f.name).unlink()
 
 
@@ -69,7 +70,7 @@ def test_multiple_files_sorted_output() -> None:
         assert result.returncode == 0
         assert result.stdout.strip().isdigit()
 
-        assert "### Token counts:" in result.stderr
+        assert "┌" in result.stderr
         assert small.name in result.stderr
         assert large.name in result.stderr
         assert "total" in result.stderr

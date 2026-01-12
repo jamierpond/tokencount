@@ -71,7 +71,7 @@ def test_multiple_files_sorted_output() -> None:
         assert result.returncode == 0
         assert result.stdout.strip().isdigit()
 
-        assert "┌" in result.stderr
+        assert "L" in result.stderr and "C" in result.stderr and "T" in result.stderr
         assert small.name in result.stderr
         assert large.name in result.stderr
         assert "total" in result.stderr
@@ -99,7 +99,9 @@ def test_json_output() -> None:
         assert "encoding" in data
         assert "files" in data
         assert "total" in data
-        assert data["total"] > 0
+        assert data["total"]["tokens"] > 0
+        assert data["total"]["lines"] > 0
+        assert data["total"]["chars"] > 0
     Path(f.name).unlink()
 
 

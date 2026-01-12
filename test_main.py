@@ -47,8 +47,9 @@ def test_single_file() -> None:
         assert result.returncode == 0
         assert result.stdout.strip().isdigit()
         assert int(result.stdout.strip()) > 0
-        assert "┌" in result.stderr
-        assert "tokens" in result.stderr
+        assert "L" in result.stderr
+        assert "C" in result.stderr
+        assert "T" in result.stderr
     Path(f.name).unlink()
 
 

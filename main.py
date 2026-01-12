@@ -123,6 +123,10 @@ def print_pretty_output(
         for line in get_reference_comparison(total_tokens):
             stderr.print(f"  [dim italic]{line}[/dim italic]")
 
+    if total_tokens > 1_000_000:
+        stderr.print()
+        stderr.print("  [bold red]WARNING: SOTA models don't have more than 1M tokens in context.[/bold red]")
+
     stderr.print()
     print(total_tokens)
 

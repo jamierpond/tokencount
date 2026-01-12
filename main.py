@@ -1,6 +1,7 @@
 import argparse
 import json
 import sys
+from dataclasses import dataclass
 
 import tiktoken
 
@@ -13,19 +14,21 @@ def count_tokens(text: str, encoding: str) -> int:
 
 
 def count_lines(text: str) -> int:
-    return text.count("\n") + (1 if text and not text.endswith("\n") else 0)
+    if not text:
+        return 0
+    return text.count("\n") + (1 if not text.endswith("\n") else 0)
 
 
 def count_chars(text: str) -> int:
     return len(text)
 
 
+@dataclass
 class FileStats:
-    def __init__(self, name: str, tokens: int, lines: int, chars: int):
-        self.name = name
-        self.tokens = tokens
-        self.lines = lines
-        self.chars = chars
+    name: str
+    tokens: int
+    lines: int
+    chars: int
 
 
 def format_number(n: int) -> str:
@@ -33,46 +36,64 @@ def format_number(n: int) -> str:
 
 
 def print_pretty_output(
-    sorted_counts: list[tuple[str, int]], total: int, encoding: str
+    sorted_stats: list[FileStats], total_tokens: int, encoding: str
 ) -> None:
-    total_formatted = format_number(total)
-    token_width = len(total_formatted)
+    total_lines = sum(s.lines for s in sorted_stats)
+    total_chars = sum(s.chars for s in sorted_stats)
+
+    tok_w = max(len(format_number(total_tokens)), 3)
+    line_w = max(len(format_number(total_lines)), 3)
+    char_w = max(len(format_number(total_chars)), 3)
 
     print(file=sys.stderr)
-    if len(sorted_counts) > 1:
-        max_name = max(len(name) for name, _ in sorted_counts)
-        total_line = f"{total_formatted}  total ({encoding})"
-        content_width = max(token_width + 2 + max_name, len(total_line))
+    for s in sorted_stats:
+        name = s.name if s.name != "<stdin>" else "stdin"
+        print(
+            f"  {format_number(s.lines):>{line_w}}L  "
+            f"{format_number(s.chars):>{char_w}}C  "
+            f"{format_number(s.tokens):>{tok_w}}T  {name}",
+            file=sys.stderr,
+        )
 
-        print(f"  ┌─{'─' * content_width}─┐", file=sys.stderr)
-        for name, count in sorted_counts:
-            line = f"{format_number(count):>{token_width}}  {name}"
-            print(f"  │ {line:<{content_width}} │", file=sys.stderr)
-        print(f"  ├─{'─' * content_width}─┤", file=sys.stderr)
-        print(f"  │ {total_line:<{content_width}} │", file=sys.stderr)
-        print(f"  └─{'─' * content_width}─┘", file=sys.stderr)
+    if len(sorted_stats) > 1:
+        print(
+            f"  {'-' * line_w}-  {'-' * char_w}-  {'-' * tok_w}-",
+            file=sys.stderr,
+        )
+        print(
+            f"  {format_number(total_lines):>{line_w}}L  "
+            f"{format_number(total_chars):>{char_w}}C  "
+            f"{format_number(total_tokens):>{tok_w}}T  total ({encoding})",
+            file=sys.stderr,
+        )
     else:
-        name = sorted_counts[0][0] if sorted_counts[0][0] != "<stdin>" else "stdin"
-        label = f"{total_formatted} tokens ({encoding})"
-        box_width = max(len(label) + 2, len(name) + 2)
-
-        print(f"  ┌{'─' * box_width}┐", file=sys.stderr)
-        print(f"  │ {name:<{box_width - 2}} │", file=sys.stderr)
-        print(f"  ├{'─' * box_width}┤", file=sys.stderr)
-        print(f"  │ {label:<{box_width - 2}} │", file=sys.stderr)
-        print(f"  └{'─' * box_width}┘", file=sys.stderr)
+        print(f"  ({encoding})", file=sys.stderr)
     print(file=sys.stderr)
 
-    print(total)
+    print(total_tokens)
 
 
 def print_json_output(
-    sorted_counts: list[tuple[str, int]], total: int, encoding: str
+    sorted_stats: list[FileStats], total_tokens: int, encoding: str
 ) -> None:
+    total_lines = sum(s.lines for s in sorted_stats)
+    total_chars = sum(s.chars for s in sorted_stats)
     output = {
         "encoding": encoding,
-        "files": [{"name": name, "tokens": count} for name, count in sorted_counts],
-        "total": total,
+        "files": [
+            {
+                "name": s.name,
+                "lines": s.lines,
+                "chars": s.chars,
+                "tokens": s.tokens,
+            }
+            for s in sorted_stats
+        ],
+        "total": {
+            "lines": total_lines,
+            "chars": total_chars,
+            "tokens": total_tokens,
+        },
     }
     print(json.dumps(output, indent=2))
 
@@ -105,15 +126,20 @@ def main() -> None:
         print(f"tc: unknown encoding: {args.encoding}", file=sys.stderr)
         sys.exit(1)
 
-    file_counts: list[tuple[str, int]] = []
+    file_stats: list[FileStats] = []
 
     if args.files:
         for filepath in args.files:
             try:
                 with open(filepath, "r", encoding="utf-8") as f:
                     content = f.read()
-                tokens = count_tokens(content, args.encoding)
-                file_counts.append((filepath, tokens))
+                stats = FileStats(
+                    name=filepath,
+                    tokens=count_tokens(content, args.encoding),
+                    lines=count_lines(content),
+                    chars=count_chars(content),
+                )
+                file_stats.append(stats)
             except FileNotFoundError:
                 print(f"tc: {filepath}: No such file or directory", file=sys.stderr)
                 sys.exit(1)
@@ -125,16 +151,21 @@ def main() -> None:
             parser.print_help()
             sys.exit(0)
         content = sys.stdin.read()
-        tokens = count_tokens(content, args.encoding)
-        file_counts.append(("<stdin>", tokens))
+        stats = FileStats(
+            name="<stdin>",
+            tokens=count_tokens(content, args.encoding),
+            lines=count_lines(content),
+            chars=count_chars(content),
+        )
+        file_stats.append(stats)
 
-    sorted_counts = sorted(file_counts, key=lambda x: x[1])
-    total = sum(count for _, count in sorted_counts)
+    sorted_stats = sorted(file_stats, key=lambda x: x.tokens)
+    total_tokens = sum(s.tokens for s in sorted_stats)
 
     if args.json:
-        print_json_output(sorted_counts, total, args.encoding)
+        print_json_output(sorted_stats, total_tokens, args.encoding)
     else:
-        print_pretty_output(sorted_counts, total, args.encoding)
+        print_pretty_output(sorted_stats, total_tokens, args.encoding)
 
 
 if __name__ == "__main__":

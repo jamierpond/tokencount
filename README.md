@@ -39,7 +39,7 @@ tc --json file.txt             # JSON output
 2918
 ```
 
-Sorted by token count. Total on stdout for piping.
+Sorted by token count. Total on stdout for piping. Warns if over 1M tokens.
 
 ## Encodings
 

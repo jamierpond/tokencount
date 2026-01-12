@@ -125,7 +125,7 @@ def print_pretty_output(
 
     if total_tokens > 1_000_000:
         stderr.print()
-        stderr.print("  [bold red]WARNING: SOTA models don't have more than 1M tokens in context.[/bold red]")
+        stderr.print("  [bold red]Exceeds 1M token context limit of most models.[/bold red]")
 
     stderr.print()
     print(total_tokens)

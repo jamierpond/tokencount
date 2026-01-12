@@ -1,4 +1,4 @@
-.PHONY: run test ci dev install install-editable uninstall
+.PHONY: run test ci dev install install-editable uninstall fmt
 
 dev:
 	uv sync --group dev
@@ -8,6 +8,9 @@ run:
 
 test:
 	uv run pytest -v
+
+fmt:
+	uv run black .
 
 ci:
 	uv run black --check .

@@ -26,9 +26,7 @@ def print_pretty_output(
 
         print("\n### Token counts:", file=sys.stderr)
         for name, count in sorted_counts:
-            print(
-                f"  {format_number(count):>{token_width}}  {name}", file=sys.stderr
-            )
+            print(f"  {format_number(count):>{token_width}}  {name}", file=sys.stderr)
         print("-" * (token_width + max_name + 4), file=sys.stderr)
         print(
             f"  {format_number(total):>{token_width}}  total ({encoding})",

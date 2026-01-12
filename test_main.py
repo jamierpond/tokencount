@@ -69,13 +69,36 @@ def test_multiple_files_sorted_output() -> None:
         assert result.returncode == 0
         assert result.stdout.strip().isdigit()
 
-        stderr_lines = result.stderr.strip().split("\n")
-        assert len(stderr_lines) == 2
-        assert small.name in stderr_lines[0]
-        assert large.name in stderr_lines[1]
+        assert "### Token counts:" in result.stderr
+        assert small.name in result.stderr
+        assert large.name in result.stderr
+        assert "total" in result.stderr
+        small_pos = result.stderr.find(small.name)
+        large_pos = result.stderr.find(large.name)
+        assert small_pos < large_pos
 
     Path(small.name).unlink()
     Path(large.name).unlink()
+
+
+def test_json_output() -> None:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
+        f.write("hello world")
+        f.flush()
+        result = subprocess.run(
+            ["python", "main.py", "--json", f.name],
+            capture_output=True,
+            text=True,
+        )
+        assert result.returncode == 0
+        import json
+
+        data = json.loads(result.stdout)
+        assert "encoding" in data
+        assert "files" in data
+        assert "total" in data
+        assert data["total"] > 0
+    Path(f.name).unlink()
 
 
 def test_stdin_input() -> None:

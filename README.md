@@ -2,6 +2,17 @@
 
 Token counter CLI. Like `wc` but for LLM tokens.
 
+I use this to get a sense of how much I'm about to nuke an LLM chat.
+E.g.
+```bash
+git diff | tc
+```
+Before I:
+```bash
+git diff | pbcopy
+```
+It into an LLM chat, for example, when reviewing a PR.
+
 ## Quick Install
 
 ```bash

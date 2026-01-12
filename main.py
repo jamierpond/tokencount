@@ -37,39 +37,40 @@ def format_number(n: int) -> str:
     return f"{n:,}"
 
 
+def format_size(chars: int) -> str:
+    if chars >= 1_000_000:
+        return f"{chars / 1_000_000:.2f} MB"
+    elif chars >= 1_000:
+        return f"{chars / 1_000:.2f} KB"
+    return f"{chars} B"
+
+
 def print_pretty_output(
     sorted_stats: list[FileStats], total_tokens: int, encoding: str
 ) -> None:
     total_lines = sum(s.lines for s in sorted_stats)
     total_chars = sum(s.chars for s in sorted_stats)
 
-    tok_w = max(len(format_number(total_tokens)), 3)
-    line_w = max(len(format_number(total_lines)), 3)
-    char_w = max(len(format_number(total_chars)), 3)
-
     print(file=sys.stderr)
-    for s in sorted_stats:
-        name = s.name if s.name != "<stdin>" else "stdin"
-        print(
-            f"  {format_number(s.lines):>{line_w}}L  "
-            f"{format_number(s.chars):>{char_w}}C  "
-            f"{format_number(s.tokens):>{tok_w}}T  {name}",
-            file=sys.stderr,
-        )
 
     if len(sorted_stats) > 1:
-        print(
-            f"  {'-' * line_w}-  {'-' * char_w}-  {'-' * tok_w}-",
-            file=sys.stderr,
-        )
-        print(
-            f"  {format_number(total_lines):>{line_w}}L  "
-            f"{format_number(total_chars):>{char_w}}C  "
-            f"{format_number(total_tokens):>{tok_w}}T  total ({encoding})",
-            file=sys.stderr,
-        )
-    else:
-        print(f"  ({encoding})", file=sys.stderr)
+        tok_w = max(len(format_number(s.tokens)) for s in sorted_stats)
+        for s in sorted_stats:
+            print(
+                f"  {format_number(s.tokens):>{tok_w}}  {s.name}",
+                file=sys.stderr,
+            )
+        print(f"  {'-' * tok_w}--", file=sys.stderr)
+
+    print(
+        f"  {format_number(total_lines)} lines, {format_size(total_chars)}",
+        file=sys.stderr,
+    )
+    print(file=sys.stderr)
+    print(
+        f"  >>> {format_number(total_tokens)} tokens ({encoding})",
+        file=sys.stderr,
+    )
     print(file=sys.stderr)
 
     print(total_tokens)

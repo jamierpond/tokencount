@@ -1,6 +1,6 @@
-.PHONY: run test ci install
+.PHONY: run test ci dev install install-editable uninstall
 
-install:
+dev:
 	uv sync --group dev
 
 run:
@@ -12,3 +12,12 @@ test:
 ci:
 	uv run black --check .
 	uv run pyright
+
+install:
+	uv tool install .
+
+install-editable:
+	uv tool install --editable .
+
+uninstall:
+	uv tool uninstall tokencount

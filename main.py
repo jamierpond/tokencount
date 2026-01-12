@@ -16,6 +16,8 @@ stderr = Console(stderr=True)
 
 # Pre-computed token counts for reference texts (o200k_base encoding)
 REFERENCE_TEXTS = [
+    ("Gettysburg Address", 1_938),
+    ("A Modest Proposal", 8_619),
     ("The Yellow Wallpaper", 11_821),
     ("Alice in Wonderland", 40_952),
     ("Heart of Darkness", 56_203),
@@ -40,27 +42,28 @@ REFERENCE_TEXTS = [
 
 
 def get_reference_comparison(tokens: int) -> str | None:
-    """Return a string comparing token count to reference novels."""
+    """Return a string comparing token count to closest reference text."""
     if tokens <= 0:
         return None
 
-    # Find where this fits
-    smaller = None
-    larger = None
+    # Find closest reference
+    closest_name = None
+    closest_count = None
+    min_diff = float("inf")
 
     for name, count in REFERENCE_TEXTS:
-        if count <= tokens:
-            smaller = (name, count)
-        elif larger is None:
-            larger = (name, count)
-            break
+        diff = abs(tokens - count)
+        if diff < min_diff:
+            min_diff = diff
+            closest_name = name
+            closest_count = count
 
-    if smaller is None and larger:
-        return f"< {larger[0]}"
-    elif larger is None and smaller:
-        return f"> {smaller[0]}"
-    elif smaller and larger:
-        return f"{smaller[0]} < x < {larger[0]}"
+    if closest_name and closest_count:
+        pct = (tokens / closest_count) * 100
+        if pct >= 100:
+            return f"{pct:.0f}% of {closest_name}"
+        else:
+            return f"{pct:.0f}% of {closest_name}"
     return None
 
 

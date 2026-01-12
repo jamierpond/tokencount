@@ -105,6 +105,12 @@ def main() -> None:
         description="Count tokens in files or stdin using tiktoken"
     )
     parser.add_argument(
+        "-v",
+        "--version",
+        action="version",
+        version=f"tc {__version__}",
+    )
+    parser.add_argument(
         "files",
         nargs="*",
         help="Files to count tokens in. If none provided, reads from stdin.",

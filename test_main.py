@@ -47,9 +47,8 @@ def test_single_file() -> None:
         assert result.returncode == 0
         assert result.stdout.strip().isdigit()
         assert int(result.stdout.strip()) > 0
-        assert "L" in result.stderr
-        assert "C" in result.stderr
-        assert "T" in result.stderr
+        assert "lines" in result.stderr
+        assert "tokens" in result.stderr
     Path(f.name).unlink()
 
 
@@ -71,10 +70,10 @@ def test_multiple_files_sorted_output() -> None:
         assert result.returncode == 0
         assert result.stdout.strip().isdigit()
 
-        assert "L" in result.stderr and "C" in result.stderr and "T" in result.stderr
+        assert "lines" in result.stderr
+        assert "tokens" in result.stderr
         assert small.name in result.stderr
         assert large.name in result.stderr
-        assert "total" in result.stderr
         small_pos = result.stderr.find(small.name)
         large_pos = result.stderr.find(large.name)
         assert small_pos < large_pos

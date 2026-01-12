@@ -5,9 +5,14 @@ from dataclasses import dataclass
 from importlib.metadata import version
 
 import tiktoken
+from rich.console import Console
+from rich.table import Table
+from rich.text import Text
 
 __version__ = version("tokencount")
 DEFAULT_ENCODING = "o200k_base"
+
+stderr = Console(stderr=True)
 
 
 def count_tokens(text: str, encoding: str) -> int:
@@ -33,10 +38,6 @@ class FileStats:
     chars: int
 
 
-def format_number(n: int) -> str:
-    return f"{n:,}"
-
-
 def format_size(chars: int) -> str:
     if chars >= 1_000_000:
         return f"{chars / 1_000_000:.2f} MB"
@@ -51,28 +52,30 @@ def print_pretty_output(
     total_lines = sum(s.lines for s in sorted_stats)
     total_chars = sum(s.chars for s in sorted_stats)
 
-    print(file=sys.stderr)
+    stderr.print()
 
     if len(sorted_stats) > 1:
-        tok_w = max(len(format_number(s.tokens)) for s in sorted_stats)
+        table = Table(show_header=False, box=None, padding=(0, 1))
+        table.add_column(justify="right", style="cyan")
+        table.add_column(style="dim")
+
         for s in sorted_stats:
-            print(
-                f"  {format_number(s.tokens):>{tok_w}}  {s.name}",
-                file=sys.stderr,
-            )
-        print(f"  {'-' * tok_w}--", file=sys.stderr)
+            table.add_row(f"{s.tokens:,}", s.name)
 
-    print(
-        f"  {format_number(total_lines)} lines, {format_size(total_chars)}",
-        file=sys.stderr,
-    )
-    print(file=sys.stderr)
-    print(
-        f"  >>> {format_number(total_tokens)} tokens ({encoding})",
-        file=sys.stderr,
-    )
-    print(file=sys.stderr)
+        stderr.print(table)
+        stderr.print()
 
+    stderr.print(f"  [dim]{total_lines:,} lines, {format_size(total_chars)}[/dim]")
+    stderr.print()
+
+    token_text = Text()
+    token_text.append("  ")
+    token_text.append(f"{total_tokens:,}", style="bold green")
+    token_text.append(" tokens ", style="green")
+    token_text.append(f"({encoding})", style="dim")
+    stderr.print(token_text)
+
+    stderr.print()
     print(total_tokens)
 
 
@@ -132,7 +135,7 @@ def main() -> None:
     try:
         tiktoken.get_encoding(args.encoding)
     except ValueError:
-        print(f"tc: unknown encoding: {args.encoding}", file=sys.stderr)
+        stderr.print(f"[red]tc: unknown encoding: {args.encoding}[/red]")
         sys.exit(1)
 
     file_stats: list[FileStats] = []
@@ -150,10 +153,10 @@ def main() -> None:
                 )
                 file_stats.append(stats)
             except FileNotFoundError:
-                print(f"tc: {filepath}: No such file or directory", file=sys.stderr)
+                stderr.print(f"[red]tc: {filepath}: No such file or directory[/red]")
                 sys.exit(1)
             except IsADirectoryError:
-                print(f"tc: {filepath}: Is a directory", file=sys.stderr)
+                stderr.print(f"[red]tc: {filepath}: Is a directory[/red]")
                 sys.exit(1)
     else:
         if sys.stdin.isatty():
@@ -161,7 +164,7 @@ def main() -> None:
             sys.exit(0)
         content = sys.stdin.read()
         stats = FileStats(
-            name="<stdin>",
+            name="stdin",
             tokens=count_tokens(content, args.encoding),
             lines=count_lines(content),
             chars=count_chars(content),

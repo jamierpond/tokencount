@@ -29,11 +29,11 @@ def get_reference_comparison(tokens: int) -> list[str]:
     # Edge cases
     if tokens < smallest_count:
         pct = (tokens / smallest_count) * 100
-        return [f"Smaller than {smallest_title} ({pct:.0f}%)"]
+        return [f"Smaller than \"{smallest_title}\" by {smallest_author} ({pct:.0f}%)"]
 
     if tokens > largest_count:
         pct = (tokens / largest_count) * 100
-        return [f"Bigger than {largest_title} ({pct:.0f}%)"]
+        return [f"Bigger than \"{largest_title}\" by {largest_author} ({pct:.0f}%)"]
 
     # Find lower and upper bounds
     lower = None
@@ -46,13 +46,13 @@ def get_reference_comparison(tokens: int) -> list[str]:
             break
 
     if lower and upper:
-        lower_title, _, lower_count = lower
-        upper_title, _, upper_count = upper
+        lower_title, lower_author, lower_count = lower
+        upper_title, upper_author, upper_count = upper
         lower_pct = (tokens / lower_count) * 100
         upper_pct = (tokens / upper_count) * 100
         return [
-            f"Somewhere between {lower_title} and {upper_title}",
-            f"{lower_pct:.0f}% of {lower_title}, {upper_pct:.0f}% of {upper_title}",
+            f"Somewhere between \"{lower_title}\" and \"{upper_title}\"",
+            f"{lower_pct:.0f}% of \"{lower_title}\" ({lower_author}), {upper_pct:.0f}% of \"{upper_title}\" ({upper_author})",
         ]
 
     return []

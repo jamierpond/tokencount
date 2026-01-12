@@ -14,6 +14,55 @@ DEFAULT_ENCODING = "o200k_base"
 
 stderr = Console(stderr=True)
 
+# Pre-computed token counts for reference texts (o200k_base encoding)
+REFERENCE_TEXTS = [
+    ("The Yellow Wallpaper", 11_821),
+    ("Alice in Wonderland", 40_952),
+    ("Heart of Darkness", 56_203),
+    ("A Study in Scarlet", 61_757),
+    ("Peter Pan", 67_181),
+    ("The Prince", 70_730),
+    ("Treasure Island", 97_642),
+    ("Frankenstein", 101_770),
+    ("Tom Sawyer", 102_285),
+    ("Dorian Gray", 109_503),
+    ("Sherlock Holmes", 141_038),
+    ("Wuthering Heights", 166_761),
+    ("Pride and Prejudice", 174_412),
+    ("A Tale of Two Cities", 189_576),
+    ("Dracula", 216_384),
+    ("Great Expectations", 254_088),
+    ("Jane Eyre", 257_652),
+    ("Crime and Punishment", 287_138),
+    ("Moby Dick", 309_581),
+    ("War and Peace", 769_845),
+]
+
+
+def get_reference_comparison(tokens: int) -> str | None:
+    """Return a string comparing token count to reference novels."""
+    if tokens <= 0:
+        return None
+
+    # Find where this fits
+    smaller = None
+    larger = None
+
+    for name, count in REFERENCE_TEXTS:
+        if count <= tokens:
+            smaller = (name, count)
+        elif larger is None:
+            larger = (name, count)
+            break
+
+    if smaller is None and larger:
+        return f"< {larger[0]}"
+    elif larger is None and smaller:
+        return f"> {smaller[0]}"
+    elif smaller and larger:
+        return f"{smaller[0]} < x < {larger[0]}"
+    return None
+
 
 def count_tokens(text: str, encoding: str) -> int:
     enc = tiktoken.get_encoding(encoding)
@@ -74,6 +123,12 @@ def print_pretty_output(
     token_text.append(" tokens ", style="green")
     token_text.append(f"({encoding})", style="dim")
     stderr.print(token_text)
+
+    # Show reference comparison only for default encoding
+    if encoding == DEFAULT_ENCODING:
+        comparison = get_reference_comparison(total_tokens)
+        if comparison:
+            stderr.print(f"  [dim italic]{comparison}[/dim italic]")
 
     stderr.print()
     print(total_tokens)

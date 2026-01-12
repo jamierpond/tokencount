@@ -3,9 +3,9 @@
 Generate REFERENCE_TEXTS by downloading from Project Gutenberg.
 
 Usage:
-    ./count_references.py           # Download all, output to stdout
-    ./count_references.py --write   # Write directly to counts.py
-    ./count_references.py --table   # Output as table instead
+    ./count_references.py           # Download all, write to counts.py
+    ./count_references.py --stdout  # Output to stdout instead
+    ./count_references.py --table   # Output as table
 """
 
 import argparse
@@ -88,8 +88,8 @@ def generate_python(results: list[tuple[str, str, int]]) -> str:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Generate REFERENCE_TEXTS")
+    parser.add_argument("--stdout", action="store_true", help="Print to stdout")
     parser.add_argument("--table", action="store_true", help="Output as table")
-    parser.add_argument("--write", action="store_true", help="Write to counts.py")
     args = parser.parse_args()
 
     script_dir = Path(__file__).parent.parent
@@ -99,7 +99,6 @@ def main() -> None:
         print(f"Processing: {title}...", file=sys.stderr)
         try:
             if gutenberg_id is None:
-                # Local file
                 local_path = script_dir / LOCAL_FILES[title]
                 text = local_path.read_text(encoding="utf-8")
             else:
@@ -111,19 +110,18 @@ def main() -> None:
         except Exception as e:
             print(f"  ERROR: {e}", file=sys.stderr)
 
-    # Sort by token count
     results.sort(key=lambda x: x[2])
-
     print(file=sys.stderr)
+
     if args.table:
         for title, author, tokens in results:
             print(f"{tokens:>12,}  {title} by {author}")
-    elif args.write:
+    elif args.stdout:
+        print(generate_python(results))
+    else:
         counts_path = script_dir / "counts.py"
         counts_path.write_text(generate_python(results))
         print(f"Wrote {counts_path}", file=sys.stderr)
-    else:
-        print(generate_python(results))
 
 
 if __name__ == "__main__":

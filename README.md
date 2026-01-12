@@ -2,7 +2,13 @@
 
 Token counter CLI. Like `wc` but for LLM tokens.
 
-## Install
+## Quick Install
+
+```bash
+uv tool install git+https://github.com/jamierpond/tokencount
+```
+
+## Install from source
 
 ```bash
 uv tool install .

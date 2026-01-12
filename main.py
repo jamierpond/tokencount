@@ -15,29 +15,26 @@ DEFAULT_ENCODING = "o200k_base"
 stderr = Console(stderr=True)
 
 # Pre-computed token counts for reference texts (o200k_base encoding)
+# Format: (title, author, tokens)
 REFERENCE_TEXTS = [
-    ("Gettysburg Address", 1_938),
-    ("A Modest Proposal", 8_619),
-    ("The Yellow Wallpaper", 11_821),
-    ("Alice in Wonderland", 40_952),
-    ("Heart of Darkness", 56_203),
-    ("A Study in Scarlet", 61_757),
-    ("Peter Pan", 67_181),
-    ("The Prince", 70_730),
-    ("Treasure Island", 97_642),
-    ("Frankenstein", 101_770),
-    ("Tom Sawyer", 102_285),
-    ("Dorian Gray", 109_503),
-    ("Sherlock Holmes", 141_038),
-    ("Wuthering Heights", 166_761),
-    ("Pride and Prejudice", 174_412),
-    ("A Tale of Two Cities", 189_576),
-    ("Dracula", 216_384),
-    ("Great Expectations", 254_088),
-    ("Jane Eyre", 257_652),
-    ("Crime and Punishment", 287_138),
-    ("Moby Dick", 309_581),
-    ("War and Peace", 769_845),
+    ("Hop on Pop", "Dr. Seuss", 538),
+    ("Green Eggs and Ham", "Dr. Seuss", 1_015),
+    ("Fox in Socks", "Dr. Seuss", 1_256),
+    ("One Fish Two Fish", "Dr. Seuss", 1_630),
+    ("The Grinch", "Dr. Seuss", 1_867),
+    ("The Cat in the Hat", "Dr. Seuss", 2_091),
+    ("The Waste Land", "T.S. Eliot", 4_210),
+    ("A Modest Proposal", "Jonathan Swift", 8_619),
+    ("The Yellow Wallpaper", "C.P. Gilman", 11_821),
+    ("Alice in Wonderland", "Lewis Carroll", 40_952),
+    ("Heart of Darkness", "Joseph Conrad", 56_203),
+    ("The Prince", "Machiavelli", 70_730),
+    ("Frankenstein", "Mary Shelley", 101_770),
+    ("Dorian Gray", "Oscar Wilde", 109_503),
+    ("Pride and Prejudice", "Jane Austen", 174_412),
+    ("Dracula", "Bram Stoker", 216_384),
+    ("Moby Dick", "Herman Melville", 309_581),
+    ("War and Peace", "Leo Tolstoy", 769_845),
 ]
 
 
@@ -47,23 +44,19 @@ def get_reference_comparison(tokens: int) -> str | None:
         return None
 
     # Find closest reference
-    closest_name = None
-    closest_count = None
+    closest = None
     min_diff = float("inf")
 
-    for name, count in REFERENCE_TEXTS:
+    for title, author, count in REFERENCE_TEXTS:
         diff = abs(tokens - count)
         if diff < min_diff:
             min_diff = diff
-            closest_name = name
-            closest_count = count
+            closest = (title, author, count)
 
-    if closest_name and closest_count:
-        pct = (tokens / closest_count) * 100
-        if pct >= 100:
-            return f"{pct:.0f}% of {closest_name}"
-        else:
-            return f"{pct:.0f}% of {closest_name}"
+    if closest:
+        title, author, count = closest
+        pct = (tokens / count) * 100
+        return f"{pct:.0f}% of {title} by {author}"
     return None
 
 

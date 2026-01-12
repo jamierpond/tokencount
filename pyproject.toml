@@ -25,3 +25,9 @@ dev = [
 
 [tool.hatch.build.targets.wheel]
 packages = ["."]
+
+[tool.pyright]
+exclude = ["extra", "venv", ".venv"]
+
+[tool.black]
+extend-exclude = "(extra|venv)"

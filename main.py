@@ -17,10 +17,10 @@ DEFAULT_ENCODING = "o200k_base"
 stderr = Console(stderr=True)
 
 
-def get_reference_comparison(tokens: int) -> str | None:
-    """Return a string comparing token count to reference texts."""
+def get_reference_comparison(tokens: int) -> list[str]:
+    """Return lines comparing token count to reference texts."""
     if tokens <= 0 or not REFERENCE_TEXTS:
-        return None
+        return []
 
     # REFERENCE_TEXTS is sorted by token count (ascending)
     smallest_title, smallest_author, smallest_count = REFERENCE_TEXTS[0]
@@ -29,11 +29,11 @@ def get_reference_comparison(tokens: int) -> str | None:
     # Edge cases
     if tokens < smallest_count:
         pct = (tokens / smallest_count) * 100
-        return f"{pct:.0f}% of {smallest_title} by {smallest_author}"
+        return [f"Smaller than {smallest_title} ({pct:.0f}%)"]
 
     if tokens > largest_count:
         pct = (tokens / largest_count) * 100
-        return f"{pct:.0f}% of {largest_title} by {largest_author}"
+        return [f"Bigger than {largest_title} ({pct:.0f}%)"]
 
     # Find lower and upper bounds
     lower = None
@@ -46,16 +46,16 @@ def get_reference_comparison(tokens: int) -> str | None:
             break
 
     if lower and upper:
-        lower_title, lower_author, lower_count = lower
-        upper_title, upper_author, upper_count = upper
+        lower_title, _, lower_count = lower
+        upper_title, _, upper_count = upper
         lower_pct = (tokens / lower_count) * 100
         upper_pct = (tokens / upper_count) * 100
-        return (
-            f"{lower_pct:.0f}% of {lower_title}, "
-            f"{upper_pct:.0f}% of {upper_title}"
-        )
+        return [
+            f"Somewhere between {lower_title} and {upper_title}",
+            f"{lower_pct:.0f}% of {lower_title}, {upper_pct:.0f}% of {upper_title}",
+        ]
 
-    return None
+    return []
 
 
 def count_tokens(text: str, encoding: str) -> int:

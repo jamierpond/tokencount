@@ -28,17 +28,18 @@ tc --json file.txt             # JSON output
 ```
    475  counts.py
    878  test_main.py
- 1,563  main.py
+ 1,565  main.py
 
   386 lines, 11.36 KB
 
-  2,916 tokens (o200k_base)
+  2,918 tokens (o200k_base)
+  Somewhere between The Cat in the Hat and The Waste Land
   139% of The Cat in the Hat, 69% of The Waste Land
 
-2916
+2918
 ```
 
-Sorted by token count. Shows where you fall between two reference texts. Total on stdout for piping.
+Sorted by token count. Total on stdout for piping.
 
 ## Encodings
 

@@ -120,9 +120,8 @@ def print_pretty_output(
 
     # Show reference comparison only for default encoding
     if encoding == DEFAULT_ENCODING:
-        comparison = get_reference_comparison(total_tokens)
-        if comparison:
-            stderr.print(f"  [dim italic]{comparison}[/dim italic]")
+        for line in get_reference_comparison(total_tokens):
+            stderr.print(f"  [dim italic]{line}[/dim italic]")
 
     stderr.print()
     print(total_tokens)
